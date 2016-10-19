@@ -11,47 +11,31 @@ namespace MyStocks.Forms.Views
 {
   public partial class TweetsView : ContentPage
   {
-        TwitterViewModel viewModel;
+    public TweetsView(string ticker)
+    {
+      InitializeComponent();
+      var viewModel = new TwitterViewModel(ticker);
+      BindingContext = viewModel;
+      viewModel.LoadTweetsCommand();
 
-        public TweetsView(string ticker)
+      TweetList.ItemSelected += (sender, args) =>
         {
-            InitializeComponent();
-            viewModel = new TwitterViewModel(ticker);
+          if(TweetList.SelectedItem == null)
+            return;
 
-            // Assign the async function here, so we can await correctly
-            InitializeTweets = InitializeAsync();
-        }
-
-        // Make this a task, and we can assign it in the constructor
-        public Task InitializeTweets { get; private set; }
-
-        // Moved the code here so we can await the async call
-        private async Task InitializeAsync()
-        {
-            BindingContext = viewModel;
-
-            await viewModel.LoadTweetsCommand();
-
-            TweetList.ItemSelected += (sender, args) =>
+          Navigation.PushAsync(new ContentPage
             {
-                if (TweetList.SelectedItem == null)
-                    return;
-
-                Navigation.PushAsync(new ContentPage
+              Content = new WebView
+              {
+                Source = new UrlWebViewSource
                 {
-                    Content = new WebView
-                    {
-                        Source = new UrlWebViewSource
-                        {
-                            Url = ((Tweet)TweetList.SelectedItem).Url
-                        }
-                    }
-                });
+                  Url = ((Tweet)TweetList.SelectedItem).Url
+                }
+              }
+            });
 
-                TweetList.SelectedItem = null;
-            };
-
-
-        }
+          TweetList.SelectedItem = null;
+        };
     }
+  }
 }
